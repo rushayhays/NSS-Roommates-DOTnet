@@ -15,7 +15,7 @@ namespace Roommates.Repositories
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT Roommate.FirstName, Roommate.LastName, Roommate.RentPortion, Roommate.MoveInDate, Roommate.RoomId, Room.Id 
+                    cmd.CommandText = @"SELECT Roommate.FirstName, Roommate.LastName, Roommate.RentPortion, Roommate.MoveInDate, Roommate.RoomId, Room.Id, Room.Name, Room.MaxOccupancy 
                                         FROM Roommate
                                         LEFT JOIN Room on Roommate.RoomId = Room.Id
                                         WHERE Roommate.Id = @id";
@@ -26,19 +26,22 @@ namespace Roommates.Repositories
                         Roommate roommate = null;
                         if (reader.Read())
                         {
+                     
                             roommate = new Roommate
                             {
                                 Id = id,
                                 FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                                 LastName = reader.GetString(reader.GetOrdinal("LastName")),
                                 RentPortion = reader.GetInt32(reader.GetOrdinal("RentPortion")),
-                                Room =
+                                Room = new Room
                                 {
-                                    Id= reader.GetString(reader.GetOrdinal(Id)),
-                                    Name = reader.GetString(reader.GetOrdinal("Name"))
+                                    Id= reader.GetInt32(reader.GetOrdinal("RoomId")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    MaxOccupancy = reader.GetInt32(reader.GetOrdinal("MaxOccupancy"))
                                 }
-                            }
+                            };
                         }
+                        return roommate;
                     }
                 }
             }
