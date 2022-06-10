@@ -175,7 +175,9 @@ namespace Roommates.Repositories
                                         VALUES(@rId, @cId)";
                     cmd.Parameters.AddWithValue("@rId", rId);
                     cmd.Parameters.AddWithValue("@cId", cId);
-             
+                    cmd.ExecuteNonQuery();
+
+
                 }
             }
         }
