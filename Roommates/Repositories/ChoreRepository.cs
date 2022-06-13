@@ -213,6 +213,92 @@ namespace Roommates.Repositories
                 }
             }
         }
+        /// <summary>
+        ///  Updates a chore
+        /// </summary>
+        public void Update(Chore chore)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"UPDATE Chore
+                                    SET Name = @name
+                                    WHERE Id = @id";
+                    cmd.Parameters.AddWithValue("@name", chore.Name);
+                    cmd.Parameters.AddWithValue("@id", chore.Id);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>
+        ///  Delete the chore with the given id
+        /// </summary>
+        public void Delete(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // What do you think this code will do if there is a roommate in the room we're deleting???
+                    cmd.CommandText = "DELETE FROM Chore WHERE Id = @id";
+                    cmd.Parameters.AddWithValue("@id", id);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public List<AssignedChore> GetAssignedChores()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT RoommateId, FirstName, Name, RoommateChore.Id, Chore.Id AS IdOfChore
+                                        FROM Chore
+                                        LEFT JOIN RoommateChore on ChoreId = Chore.Id
+                                        LEFT JOIN Roommate on RoommateId = Roommate.Id
+                                        WHERE RoommateId IS NOT NULL";
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<AssignedChore> assignedChores = new List<AssignedChore>();
+                        while(reader.Read())
+                        {
+                            AssignedChore chore = new AssignedChore
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                ChoreName = reader.GetString(reader.GetOrdinal("Name")),
+                                ChoreId=reader.GetInt32(reader.GetOrdinal("IdOfChore")),
+                                RoommateName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                RoommateId = reader.GetInt32(reader.GetOrdinal("RoommateId"))
+                            };
+                            assignedChores.Add(chore);
+                        }
+                        return assignedChores;
+                    }
+                }
+            }
+        }
+
+        public void DeleteChoreAssignment(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    // What do you think this code will do if there is a roommate in the room we're deleting???
+                    cmd.CommandText = "DELETE FROM RoommateChore WHERE Id = @id";
+                    cmd.Parameters.AddWithValue("@id", id);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
 
     }
 }
